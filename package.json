@@ -1,0 +1,26 @@
+{
+  "name": "MomoUpup",
+  "main": "./index.html",
+  "version": "1.0",
+  "window": {
+    "id": "MomoUpup",
+    "name": "MomoUpup",
+    "icon": "./icon.png",
+    "min_width": 700,
+    "min_height": 160,
+    "max_height": 160,
+    "resizable": true,
+    "transparent": true,
+    "show": true,
+    "show_in_taskbar": true,
+    "frame": false,
+    "always_on_top": true
+  },
+  "devDependencies": {
+    "@types/nw.js": "^0.92.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "node-notifier": "^10.0.1"
+  }
+}
