@@ -1,8 +1,11 @@
 require('dotenv').config();
 const win = nw.Window.get();
 const fs = require('fs');
+const notifier = require("node-notifier");
+const path = require("path");
 let settings = {};
 const body = document.querySelector("body");
+let isBody = false;
 
 //打开窗口：
 win.blur();//取消焦点
@@ -34,12 +37,29 @@ menu.append(new nw.MenuItem({
         win.focus();
     }
 }));
-menu.append(new nw.MenuItem({
+const hideWindow = new nw.MenuItem({
     label: '隐藏窗口',
     click: () => {
         win.minimize();
+        if ( isBody === true ) {
+            notifier.notify(
+                {
+                    title: "墨墨藏起来啦！",
+                    message: `系统托盘处可以找到我哦！`,
+                    icon: path.join(`${nw.App.startPath.replace(/\\/g, '/')}/img/icon.png`), // Absolute path
+                    sound: true,
+                    wait: true
+                },
+                function (err, response, metadata) {
+                    // Response is response from notification
+                    // Metadata contains activationType, activationAt, deliveredAt
+                }
+            );
+            isBody = null;
+        }
     }
-}));
+});
+menu.append(hideWindow);
 menu.append(new nw.MenuItem({
     type: 'separator'
 }));
@@ -94,6 +114,10 @@ win.on('blur', function () {
 });
 body.addEventListener('contextmenu', function (event) {
     event.preventDefault(); // 阻止浏览器默认的右键菜单
+    if ( isBody === null ) {
+    } else {
+        isBody = true;
+    }
     menu.popup(event.x, event.y);
 });
 
