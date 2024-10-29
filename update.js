@@ -5,27 +5,9 @@ let notepadContent = [];
 let notepadToPost = {};
 const notifier = require('node-notifier');
 const path = require('path');
-const info = document.querySelector("#info");
 const clipboard = nw.Clipboard.get();
-const text = clipboard.get('text');
 
-info.innerHTML = text;
-
-notifier.notify(
-    {
-        title: text,
-        message: `${text} received!`,
-        icon: path.join('./icon.png'), // Absolute path (doesn't work on balloons)
-        sound: true, // Only Notification Center or Windows Toasters
-        wait: true // Wait with callback, until user action is taken against notification, does not apply to Windows Toasters as they always wait or notify-send as it does not support the wait option
-    },
-    function (err, response, metadata) {
-        // Response is response from notification
-        // Metadata contains activationType, activationAt, deliveredAt
-    }
-);
-
-(async function update() {
+export async function update(text) {
     //获取词书id
     try {
         const response = await fetch(
@@ -100,7 +82,7 @@ notifier.notify(
                 {
                     title: text,
                     message: `${text} uploaded!`,
-                    icon: path.join('./icon.png'), // Absolute path (doesn't work on balloons)
+                    icon: path.join(`${nw.App.startPath.replace(/\\/g, '/')}/img/icon.png`), // Absolute path
                     sound: true, // Only Notification Center or Windows Toasters
                     wait: true // Wait with callback, until user action is taken against notification, does not apply to Windows Toasters as they always wait or notify-send as it does not support the wait option
                 },
@@ -113,5 +95,4 @@ notifier.notify(
     } catch (error) {
         console.error(error);
     }
-
-})().catch(console.error);
+}
