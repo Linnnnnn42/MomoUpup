@@ -55,7 +55,6 @@ const showInTaskBarCheckbox = new nw.MenuItem({
     }
 });
 menu.append(showInTaskBarCheckbox);
-tray.menu = menu;
 //读取并且应用设置
 fs.readFile('./settings.json', (err, data) => {
     if (err) {
@@ -66,6 +65,7 @@ fs.readFile('./settings.json', (err, data) => {
     win.setShowInTaskbar(settings.show_in_taskbar);
     showInTaskBarCheckbox.checked = settings.show_in_taskbar;
 });
+tray.menu = menu;
 
 
 //关闭窗口：
