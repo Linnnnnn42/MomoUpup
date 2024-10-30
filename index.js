@@ -1,11 +1,51 @@
-require('dotenv').config();
 const win = nw.Window.get();
+win.show(false);
+require('dotenv').config();
 const fs = require('fs');
+const notifier = require("node-notifier");
+const path = require("path");
 let settings = {};
-const body = document.querySelector("body");
+const menu = new nw.Menu();
+const menuAutoDarkMode = new nw.Menu();
+const close = document.querySelector("#close");
+const info = document.querySelector('#info');
+const body = document.querySelector('body');
+let isBody = false;
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let isMannualSetTheme = false;
+let media = window.matchMedia('(prefers-color-scheme: dark)');
+import {shortcut} from "./shortcut.js";
 
 //打开窗口：
 win.blur();//取消焦点
+//设置主题
+function setThemeDependOnIsDark () {
+    isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (isDark) {
+        setDarkMode();
+    } else {
+        setLightMode();
+    }
+}
+function setDarkMode (){
+    info.style.backgroundColor = "black";
+    close.style.backgroundColor = "black";
+    info.style.color = "white";
+    close.style.color = "white";
+}
+function setLightMode (){
+    info.style.backgroundColor = "white";
+    close.style.backgroundColor = "white";
+    info.style.color = "black";
+    close.style.color = "black";
+}
+function setAutoDarkMode (e) {
+    if (e.matches) {
+        setDarkMode();
+    } else {
+        setLightMode();
+    }
+}
 //设置托盘
 let tray = new nw.Tray({
     title: 'MomoUpup', //在MacOS上生效
@@ -13,7 +53,6 @@ let tray = new nw.Tray({
     icon: './img/icon.png'
 });
 tray.tooltip = 'MomoUpup';
-const menu = new nw.Menu();
 menu.append(new nw.MenuItem({
     label: 'MomoUpup',
     icon: './img/icon.png',
@@ -34,27 +73,88 @@ menu.append(new nw.MenuItem({
         win.focus();
     }
 }));
-menu.append(new nw.MenuItem({
+const hideWindow = new nw.MenuItem({
     label: '隐藏窗口',
     click: () => {
         win.minimize();
+        if ( isBody === true ) {
+            notifier.notify(
+                {
+                    title: "墨墨藏起来啦！",
+                    message: `系统托盘处可以找到我哦！`,
+                    icon: path.join(`${nw.App.startPath.replace(/\\/g, '/')}/img/icon.png`), // Absolute path
+                    sound: true,
+                    wait: true
+                },
+                function (err, response, metadata) {
+                    // Response is response from notification
+                    // Metadata contains activationType, activationAt, deliveredAt
+                }
+            );
+            isBody = null;
+        }
     }
-}));
+});
+menu.append(hideWindow);
 menu.append(new nw.MenuItem({
     type: 'separator'
 }));
-const showInTaskBarCheckbox = new nw.MenuItem({
+const boxShowInTaskBarCheck = new nw.MenuItem({
     type: "checkbox",
     label: '显示任务栏图标',
     click: () => {
-        if (showInTaskBarCheckbox.checked === true) {
+        if (boxShowInTaskBarCheck.checked === true) {
             win.setShowInTaskbar(true);
         } else {
             win.setShowInTaskbar(false);
         }
     }
 });
-menu.append(showInTaskBarCheckbox);
+menu.append(boxShowInTaskBarCheck);
+menu.append(new nw.MenuItem({
+    type: 'separator'
+}));
+const boxAutoDarkMode = new nw.MenuItem({
+    type: "checkbox",
+    label: '主题跟随系统',
+    click: () => {
+        if (boxAutoDarkMode.checked === true) {
+            setThemeDependOnIsDark();
+            media.addEventListener('change', setAutoDarkMode);
+            isMannualSetTheme = false;
+        } else {
+            media.removeEventListener('change', setAutoDarkMode);
+            isMannualSetTheme = true;
+        }
+    }
+});
+menuAutoDarkMode.append(boxAutoDarkMode);
+menuAutoDarkMode.append(new nw.MenuItem({
+    label: "深色",
+    click: () => {
+        if (boxAutoDarkMode.checked === true) {
+            boxAutoDarkMode.checked = false;
+            boxAutoDarkMode.click();
+        }
+        setDarkMode();
+        console.log(isMannualSetTheme);
+    }
+}));
+menuAutoDarkMode.append(new nw.MenuItem({
+    label: "浅色",
+    click: () => {
+        if (boxAutoDarkMode.checked === true) {
+            boxAutoDarkMode.checked = false;
+            boxAutoDarkMode.click();
+        }
+        setLightMode();
+        console.log(isMannualSetTheme);
+    }
+}));
+menu.append(new nw.MenuItem({
+    label: '主题配置',
+    submenu: menuAutoDarkMode
+}));
 //读取并且应用设置
 fs.readFile('./settings.json', (err, data) => {
     if (err) {
@@ -62,8 +162,26 @@ fs.readFile('./settings.json', (err, data) => {
         return;
     }
     settings = JSON.parse(data);
+    //设置是否在任务栏中显示
     win.setShowInTaskbar(settings.show_in_taskbar);
-    showInTaskBarCheckbox.checked = settings.show_in_taskbar;
+    boxShowInTaskBarCheck.checked = settings.show_in_taskbar;
+    //设置是否开启主题跟随系统
+    boxAutoDarkMode.checked = settings.auto_dark_mode;
+    if (settings.auto_dark_mode) {
+        isMannualSetTheme = false;
+        media.addEventListener('change', setAutoDarkMode);
+        setThemeDependOnIsDark();
+    } else {
+        isMannualSetTheme = true;
+        media.removeEventListener('change', setAutoDarkMode);
+        if(settings.default_theme === "dark") {
+            setDarkMode();
+        } else if (settings.default_theme === "light") {
+            setLightMode();
+        } else {
+            setLightMode();
+        }
+    }
 });
 tray.menu = menu;
 
@@ -71,17 +189,30 @@ tray.menu = menu;
 //关闭窗口：
 function closeApp() {
     win.hide();
-    settings.show_in_taskbar = showInTaskBarCheckbox.checked;
-    fs.writeFile('./settings.json', JSON.stringify(settings),
-        (err) => {console.log(err)});
+    nw.App.unregisterGlobalHotKey(shortcut);
     tray.remove();
     tray = null;
-    nw.App.unregisterGlobalHotKey(shortcut);
-    this.close(true);
+    //保存是否在任务栏中显示设置
+    settings.show_in_taskbar = boxShowInTaskBarCheck.checked;
+    //保存是否主题跟随系统设置
+    settings.auto_dark_mode = boxAutoDarkMode.checked;
+    //保存默认主题
+    if (isMannualSetTheme) {
+        if (info.style.backgroundColor === "white") {
+            settings.default_theme = "light";
+        } else if (info.style.backgroundColor === "black") {
+            settings.default_theme = "dark";
+        } else {
+            console.error("Fail in saving default_theme");
+        }
+    }
+    //写入设置文件
+    fs.writeFileSync('./settings.json', JSON.stringify(settings));
+    //关闭窗口
+    win.close(true);
 }
 win.onclose = closeApp;
 //html内置按钮关闭窗口
-const close = document.querySelector("#close");
 close.onclick = closeApp;
 
 //窗口运行中：
@@ -94,6 +225,10 @@ win.on('blur', function () {
 });
 body.addEventListener('contextmenu', function (event) {
     event.preventDefault(); // 阻止浏览器默认的右键菜单
+    if ( isBody === null ) {
+    } else {
+        isBody = true;
+    }
     menu.popup(event.x, event.y);
 });
 
@@ -129,7 +264,11 @@ body.addEventListener('mousedown', function(e) {
     }
 });
 body.addEventListener('mouseup', function(e) {
-    startX = e.x - startX;
-    startY = Math.floor(1.5*(e.y - startY));
-    win.moveBy(startX, startY);
+    if (e.button === 0) {
+        startX = e.x - startX;
+        startY = Math.floor(1.5*(e.y - startY));
+        win.moveBy(startX, startY);
+    }
 });
+
+win.show(true);
