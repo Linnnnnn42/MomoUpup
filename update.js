@@ -51,6 +51,7 @@ export async function update(text) {
 
     //读取剪贴板，获取要添加的词语，并清空剪贴板
     notepadContent.push(text);
+    console.log(notepadContent);
     notepadToPost = JSON.stringify({
         notepad: {
             status: notepad.data.notepad.status,
@@ -61,6 +62,7 @@ export async function update(text) {
         }
     });
     clipboard.clear(); //清空剪贴板
+    notepadContent = [];//清空存储的剪贴板内容
 
     // 更新云词本
     try {
