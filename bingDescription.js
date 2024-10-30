@@ -9,8 +9,7 @@ export async function getDescription(word) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlString, 'text/html');
         // const description = doc.head.childNodes[6].content;
-        const description = doc.head.children[5].getAttribute('content');
-        return description;
+        return doc.head.children[5].getAttribute('content');
     } catch (error) {
         console.error(error);
     }

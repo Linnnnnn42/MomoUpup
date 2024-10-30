@@ -20,7 +20,7 @@ export async function update(text) {
     // (?:英\[.*?\]，)?: 类似地，匹配“英[音标]，”部分，也是可选的
     // 可以使用$1来引用捕获的单词，并在其后添加“. ”以保持格式一致
     let description = await getDescription(text).catch((err) => {console.log(err)});
-    let prefixPattern = /^必应词典为您提供(\w+)的释义，(?:美\[.*?\]，)?(?:英\[.*?\]，)?/;
+    let prefixPattern = /^必应词典为您提供(\w+)的释义，(?:美\[.*?，)?(?:英\[.*?，)?/;
     let cleanedDescription = description.replace(prefixPattern, '');
     notifier.notify(
         {
