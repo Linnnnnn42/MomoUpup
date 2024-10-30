@@ -6,6 +6,7 @@ let notepadToPost = {};
 const notifier = require('node-notifier');
 const path = require('path');
 const clipboard = nw.Clipboard.get();
+import {info} from "./index.js";
 
 export async function update(text) {
     //获取词书id
@@ -21,7 +22,6 @@ export async function update(text) {
             });
         const data = await response.json();
         id = data.data.notepads[0].id;
-        // info.innerHTML = "id="+data.data.notepads[0].id;
     } catch (error) {
         console.error(error);
     }

@@ -8,11 +8,11 @@ let settings = {};
 const menu = new nw.Menu();
 const menuAutoDarkMode = new nw.Menu();
 const close = document.querySelector("#close");
-const info = document.querySelector('#info');
+export const info = document.querySelector('#info');
 const body = document.querySelector('body');
 let isBody = false;
 let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-let isMannualSetTheme = false;
+let isManualSetTheme = false;
 let media = window.matchMedia('(prefers-color-scheme: dark)');
 import {shortcut} from "./shortcut.js";
 
@@ -121,10 +121,10 @@ const boxAutoDarkMode = new nw.MenuItem({
         if (boxAutoDarkMode.checked === true) {
             setThemeDependOnIsDark();
             media.addEventListener('change', setAutoDarkMode);
-            isMannualSetTheme = false;
+            isManualSetTheme = false;
         } else {
             media.removeEventListener('change', setAutoDarkMode);
-            isMannualSetTheme = true;
+            isManualSetTheme = true;
         }
     }
 });
@@ -137,7 +137,7 @@ menuAutoDarkMode.append(new nw.MenuItem({
             boxAutoDarkMode.click();
         }
         setDarkMode();
-        console.log(isMannualSetTheme);
+        console.log(isManualSetTheme);
     }
 }));
 menuAutoDarkMode.append(new nw.MenuItem({
@@ -148,7 +148,7 @@ menuAutoDarkMode.append(new nw.MenuItem({
             boxAutoDarkMode.click();
         }
         setLightMode();
-        console.log(isMannualSetTheme);
+        console.log(isManualSetTheme);
     }
 }));
 menu.append(new nw.MenuItem({
@@ -156,11 +156,8 @@ menu.append(new nw.MenuItem({
     submenu: menuAutoDarkMode
 }));
 //读取并且应用设置
-fs.readFile('./settings.json', (err, data) => {
-    if (err) {
-        console.error('Error reading settings.json:', err);
-        return;
-    }
+try {
+    const data = fs.readFileSync('./settings.json', 'utf8'); // 同步读取文件内容
     settings = JSON.parse(data);
     //设置是否在任务栏中显示
     win.setShowInTaskbar(settings.show_in_taskbar);
@@ -168,11 +165,11 @@ fs.readFile('./settings.json', (err, data) => {
     //设置是否开启主题跟随系统
     boxAutoDarkMode.checked = settings.auto_dark_mode;
     if (settings.auto_dark_mode) {
-        isMannualSetTheme = false;
+        isManualSetTheme = false;
         media.addEventListener('change', setAutoDarkMode);
         setThemeDependOnIsDark();
     } else {
-        isMannualSetTheme = true;
+        isManualSetTheme = true;
         media.removeEventListener('change', setAutoDarkMode);
         if(settings.default_theme === "dark") {
             setDarkMode();
@@ -182,7 +179,9 @@ fs.readFile('./settings.json', (err, data) => {
             setLightMode();
         }
     }
-});
+} catch (err) {
+    console.error('Error reading settings.json:', err);
+}
 tray.menu = menu;
 
 
@@ -197,7 +196,7 @@ function closeApp() {
     //保存是否主题跟随系统设置
     settings.auto_dark_mode = boxAutoDarkMode.checked;
     //保存默认主题
-    if (isMannualSetTheme) {
+    if (isManualSetTheme) {
         if (info.style.backgroundColor === "white") {
             settings.default_theme = "light";
         } else if (info.style.backgroundColor === "black") {
@@ -233,14 +232,15 @@ body.addEventListener('contextmenu', function (event) {
 });
 
 //窗口位置控制
-//键盘控制
+// 键盘控制
 body.addEventListener('keydown', function(e) {
-    let LEFT = 37,
-        UP = 38,
-        RIGHT = 39,
-        DOWN = 40;
+    // 定义键盘方向键的e.code值
+    let LEFT = 'ArrowLeft',
+        UP = 'ArrowUp',
+        RIGHT = 'ArrowRight',
+        DOWN = 'ArrowDown';
 
-    switch (e.keyCode) {
+    switch (e.code) { // 使用e.code代替e.keyCode
         case LEFT:
             win.moveBy(-10, 0);
             break;
