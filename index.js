@@ -1,14 +1,40 @@
-require('dotenv').config();
 const win = nw.Window.get();
+win.show(false);
+require('dotenv').config();
 const fs = require('fs');
 const notifier = require("node-notifier");
 const path = require("path");
 let settings = {};
-const body = document.querySelector("body");
+const menu = new nw.Menu();
+const close = document.querySelector("#close");
+const info = document.querySelector('#info');
+const body = document.querySelector('body');
 let isBody = false;
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let media = window.matchMedia('(prefers-color-scheme: dark)');
 
 //打开窗口：
 win.blur();//取消焦点
+//设置主题
+setDarkMode(isDark);
+function setDarkMode (e) {
+    isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    console.log(isDark);
+    if (e.matches || isDark) {
+        console.log('暗模式已启用');
+        info.style.backgroundColor = "black";
+        close.style.backgroundColor = "black";
+        info.style.color = "white";
+        close.style.color = "white";
+    } else {
+        console.log('暗模式未启用');
+        info.style.backgroundColor = "white";
+        close.style.backgroundColor = "white";
+        info.style.color = "black";
+        close.style.color = "black";
+    }
+}
+media.addEventListener('change', setDarkMode);
 //设置托盘
 let tray = new nw.Tray({
     title: 'MomoUpup', //在MacOS上生效
@@ -16,7 +42,6 @@ let tray = new nw.Tray({
     icon: './img/icon.png'
 });
 tray.tooltip = 'MomoUpup';
-const menu = new nw.Menu();
 menu.append(new nw.MenuItem({
     label: 'MomoUpup',
     icon: './img/icon.png',
@@ -101,7 +126,6 @@ function closeApp() {
 }
 win.onclose = closeApp;
 //html内置按钮关闭窗口
-const close = document.querySelector("#close");
 close.onclick = closeApp;
 
 //窗口运行中：
@@ -157,3 +181,5 @@ body.addEventListener('mouseup', function(e) {
     startY = Math.floor(1.5*(e.y - startY));
     win.moveBy(startX, startY);
 });
+
+win.show(true);

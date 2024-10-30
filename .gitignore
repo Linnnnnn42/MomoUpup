@@ -11,3 +11,6 @@ node_modules/
 #Windows
 Thumbs.db
 Desktop.ini
+
+#dev-log
+updateLog.md
