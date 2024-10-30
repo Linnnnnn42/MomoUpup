@@ -15,5 +15,5 @@ const option = {
         console.log(msg);
     }
 }
-const shortcut = new nw.Shortcut(option);
+export const shortcut = new nw.Shortcut(option);
 nw.App.registerGlobalHotKey(shortcut);
