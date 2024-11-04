@@ -10,6 +10,22 @@ import {info} from "./index.js";
 import {getDescription} from "./bingDescription.js";
 
 export async function update(text) {
+    if ( text.length <= 1) {
+        notifier.notify(
+            {
+                title: "您输入的字符太少啦",
+                message: `请输入至少两个字符`,
+                icon: path.join(`${nw.App.startPath.replace(/\\/g, '/')}/img/icon.png`), // Absolute path
+                sound: true, // Only Notification Center or Windows Toasters
+                wait: true // Wait with callback, until user action is taken against notification, does not apply to Windows Toasters as they always wait or notify-send as it does not support the wait option
+            },
+            function (err, response, metadata) {
+                // Response is response from notification
+                // Metadata contains activationType, activationAt, deliveredAt
+            }
+        );
+        return;
+    }
     //查询词语意思
     // 正则表达式说明：
     // ^: 匹配字符串的开始
