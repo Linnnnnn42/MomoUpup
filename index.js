@@ -1,6 +1,5 @@
 const win = nw.Window.get();
 win.show(false);
-require('dotenv').config();
 const fs = require('fs');
 const notifier = require("node-notifier");
 const path = require("path");

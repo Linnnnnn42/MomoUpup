@@ -1,11 +1,11 @@
-require('dotenv').config();
 import { update } from "./update.js";
+import { CONFIG } from "./config.js";
 const clipboard = nw.Clipboard.get();
 const info = document.querySelector("#info");
 
 
 const option = {
-    key: process.env.SHORTCUT,
+    key: CONFIG.SHORTCUT,
     active: function() {
         const text = clipboard.get('text');
         info.innerHTML = text;
