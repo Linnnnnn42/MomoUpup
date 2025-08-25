@@ -1,4 +1,4 @@
-require('dotenv').config();
+import { CONFIG } from "./config.js";
 let id = "";
 let notepad = {};
 let notepadContent = [];
@@ -59,7 +59,7 @@ export async function update(text) {
                 method: 'GET',
                 headers: {
                     Accept: 'application/json',
-                    Authorization: process.env.TOKEN
+                    Authorization: CONFIG.TOKEN
                 }
             });
         const data = await response.json();
@@ -76,7 +76,7 @@ export async function update(text) {
                 method: 'GET',
                 headers: {
                     Accept: 'application/json',
-                    Authorization: process.env.TOKEN
+                    Authorization: CONFIG.TOKEN
                 }
             });
         const data = await response.json();
@@ -115,7 +115,7 @@ export async function update(text) {
                 headers: {
                     'Content-Type': 'application/json',
                     Accept: 'application/json',
-                    Authorization: process.env.TOKEN
+                    Authorization: CONFIG.TOKEN
                 },
                 body: notepadToPost
             });
